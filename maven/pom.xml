@@ -155,6 +155,24 @@
 			</resource>
 		</resources>
 		<plugins>
+		
+			<plugin>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<!-- 2.16.0 is the last version supporting Java 8 -->
+				<version>2.16.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<configFile>./formatter-java.xml</configFile>
+				</configuration>
+			</plugin>
+			
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
