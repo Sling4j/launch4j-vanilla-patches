@@ -62,7 +62,19 @@
 		<ant dir="./demo/SimpleApp" target="clean" inheritAll="false" />
 	</target>
 	
-	<target name="switch-to-maven" description="switch project to maven">
+	<target name="switch-to-maven" description="switch project to Maven">
+	
+		<fail message="Project is already switched to Maven.">
+			<condition>
+				<available file="maven-readme.txt" />
+			</condition>
+		</fail>
+		<echo>Switching to Maven</echo>
+		
+		<move file=".classpath" tofile=".classpath.ant-bak" overwrite="true"/>
+		<move file=".project" tofile=".project.ant-bak" overwrite="true"/>
+		<move file="lib" tofile="lib.ant-bak"/>
+	
 		<copy todir="." overwrite="true">
 			<fileset dir="${maven}">
 				<include name="**/*" />
@@ -74,4 +86,47 @@
 		<delete dir="${lib}" />
 		<mkdir dir="./target" />
 	</target>
+	
+	<target name="switch-to-ant" description="switch project back to Ant">
+	
+		<fail message="Project is already switched to Ant.">
+			<condition>
+				<not>
+					<available file="maven-readme.txt" />
+				</not>
+			</condition>
+		</fail>
+		<echo>Switching to Ant</echo>
+		
+		<delete dir="./lib" />
+		<move file="lib.ant-bak" tofile="lib"/>
+		
+		<move file=".classpath" tofile="maven/.classpath" overwrite="true"/>
+		<move file=".project" tofile="maven/.project" overwrite="true"/>
+		<move file=".classpath.ant-bak" tofile=".classpath" overwrite="true"/>
+		<move file=".project.ant-bak" tofile=".project" overwrite="true"/>
+		
+		<!-- replace only first occurences. not pretty but works -->
+		<replaceregexp file="./pom.xml"
+				match="(&lt;project(?:.*?)&lt;version&gt;)(.*?)(&lt;/version&gt;)"
+				replace="\1$${launch4j.version}\3"
+				flags="s"/>
+		<replaceregexp file="./pom.xml"
+				match="(&lt;properties(?:.*?)&lt;version&gt;)(.*?)(&lt;/version&gt;)(.*?)(&lt;/properties&gt;)"
+				replace="\1$${launch4j.version}\3\4\5"
+				flags="s"/>
+		<replaceregexp file="./pom.xml"
+				match="(&lt;properties(?:.*?)&lt;versionNumber&gt;)(.*?)(&lt;/versionNumber&gt;)(.*?)(&lt;/properties&gt;)"
+				replace="\1$${launch4j.version}\.0\.0\3\4\5"
+				flags="s"/>		
+
+		<move file="./pom.xml" tofile="./maven/pom.xml" overwrite="true"/>
+
+		<delete dir="./assembly" />
+		
+		<delete file="./maven-readme.txt" />
+
+	
+	</target>	
+	
 </project>
