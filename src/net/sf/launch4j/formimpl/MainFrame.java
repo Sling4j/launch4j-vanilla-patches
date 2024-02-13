@@ -56,13 +56,14 @@ import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import lombok.extern.slf4j.Slf4j;
 
 import net.sf.launch4j.Builder;
 import net.sf.launch4j.BuilderException;
 import net.sf.launch4j.ExecException;
 import net.sf.launch4j.FileChooserFilter;
-import net.sf.launch4j.Log;
 import net.sf.launch4j.Main;
+import net.sf.launch4j.SwingLogUtils;
 import net.sf.launch4j.Util;
 import net.sf.launch4j.binding.Binding;
 import net.sf.launch4j.binding.BindingException;
@@ -73,6 +74,7 @@ import net.sf.launch4j.config.ConfigPersisterException;
 /**
  * @author Copyright (C) 2022 Grzegorz Kowal
  */
+@Slf4j
 public class MainFrame extends JFrame {
 	private static MainFrame _instance;
 
@@ -126,6 +128,8 @@ public class MainFrame extends JFrame {
 				new AboutActionListener());
 
 		_configForm = new ConfigFormImpl();
+		SwingLogUtils.setTextArea(_configForm.getLogTextArea());
+		
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(_toolBar, BorderLayout.NORTH);
 		getContentPane().add(_configForm, BorderLayout.CENTER);
@@ -283,15 +287,14 @@ public class MainFrame extends JFrame {
 	
 	private class BuildActionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			final Log log = Log.getSwingLog(_configForm.getLogTextArea());
 			try {
 				if ((!_saved || _configForm.isModified())
 						&& !save()) {
 					return;
 				}
-				log.clear();
+				//log.clear();
 				ConfigPersister.getInstance().getConfig().checkInvariants();
-				Builder b = new Builder(log);
+				Builder b = new Builder(null);
 				_outfile = b.build();
 				setRunEnabled(ConfigPersister.getInstance().getConfig().isGuiApplication()
 						// TODO fix console app test
@@ -303,7 +306,7 @@ public class MainFrame extends JFrame {
 				warn(ex);
 			} catch (BuilderException ex) {
 				setRunEnabled(false);
-				log.append(ex.getMessage());
+				log.error(ex.getMessage());
 			}
 		}
 	}
@@ -313,22 +316,21 @@ public class MainFrame extends JFrame {
 			try {
 				getGlassPane().setVisible(true);
 				new SwingWorker<Boolean, Boolean>() {
-		            @Override
-		            protected Boolean doInBackground() throws ExecException
-		            {
-		            	Log log = Log.getSwingLog(_configForm.getLogTextArea());
-						log.clear();
+					@Override
+					protected Boolean doInBackground() throws ExecException
+					{
+						//log.clear();
 						String path = _outfile.getPath();
 						if (Util.WINDOWS_OS) {
-							log.append(Messages.getString("MainFrame.executing") + path);
-							Util.exec(new String[] { path, "--l4j-debug" }, log);
+							log.info(Messages.getString("MainFrame.executing") + path);
+							Util.exec(new String[] { path, "--l4j-debug" }, null);
 						} else {
-							log.append(Messages.getString("MainFrame.jar.integrity.test")
+							log.info(Messages.getString("MainFrame.jar.integrity.test")
 									+ path);
-							Util.exec(new String[] { "java", "-jar", path }, log);
+							Util.exec(new String[] { "java", "-jar", path }, null);
 						}
-		            	return true;
-		            }
+						return true;
+					}
 				}.execute();
 			} catch (Exception ex) {
 				// XXX errors logged by exec

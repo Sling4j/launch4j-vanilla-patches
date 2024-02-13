@@ -38,6 +38,7 @@ package net.sf.launch4j;
 
 import java.io.File;
 import java.util.Properties;
+import lombok.extern.slf4j.Slf4j;
 
 import net.sf.launch4j.config.ConfigPersister;
 import net.sf.launch4j.formimpl.MainFrame;
@@ -45,6 +46,7 @@ import net.sf.launch4j.formimpl.MainFrame;
 /**
  * @author Copyright (C) 2005 Grzegorz Kowal
  */
+@Slf4j
 public class Main {
 	private static String _name; 
 	private static String _description;
@@ -59,7 +61,7 @@ public class Main {
 				MainFrame.createInstance();
 			} else if (args.length == 1 && !args[0].startsWith("-")) {
 				ConfigPersister.getInstance().load(new File(args[0]));
-				Builder b = new Builder(Log.getConsoleLog());
+				Builder b = new Builder(null);
 				b.build();
 			} else {
 				System.out.println(_description
@@ -67,7 +69,7 @@ public class Main {
 						+ ": launch4j config.xml");
 			}
 		} catch (Exception e) {
-			Log.getConsoleLog().append(e.getMessage());
+			log.error(e.getMessage(),e);
 			System.exit(1);
 		} 
 	}

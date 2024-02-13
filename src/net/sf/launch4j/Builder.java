@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import lombok.extern.slf4j.Slf4j;
 
 import net.sf.launch4j.binding.InvariantViolationException;
 import net.sf.launch4j.config.Config;
@@ -51,17 +52,15 @@ import net.sf.launch4j.config.ConfigPersister;
 /**
  * @author Copyright (C) 2005 Grzegorz Kowal
  */
+@Slf4j
 public class Builder {
-	private final Log _log;
 	private final File _basedir;
 
 	public Builder(Log log) {
-		_log = log;
 		_basedir = Util.getJarBasedir();
 	}
 
 	public Builder(Log log, File basedir) {
-		_log = log;
 		_basedir = basedir;
 	}
 
@@ -83,7 +82,7 @@ public class Builder {
 		final RcBuilder rcb = new RcBuilder();
 		try {
 			if (c.isJniApplication()) {
-				_log.append("WARNING: Some features are not implemented in JNI headers, see documentation.");
+				log.warn("WARNING: Some features are not implemented in JNI headers, see documentation.");
 			}
 
 			rc = rcb.build(c);
@@ -96,8 +95,8 @@ public class Builder {
 					.add("-J rc -O coff -F pe-i386")
 					.addAbsFile(rc)
 					.addAbsFile(ro);
-			_log.append(Messages.getString("Builder.compiling.resources"));
-			resCmd.exec(_log);
+			log.info(Messages.getString("Builder.compiling.resources"));
+			resCmd.exec(null);
 
 			Cmd ldCmd = new Cmd(_basedir);
 			ldCmd.addExe("ld")
@@ -113,11 +112,11 @@ public class Builder {
 					.addFiles(c.getLibs())
 					.add("-o")
 					.addAbsFile(outfile);
-			_log.append(Messages.getString("Builder.linking"));
-			ldCmd.exec(_log);
+			log.info(Messages.getString("Builder.linking"));
+			ldCmd.exec(null);
 
 			if (!c.isDontWrapJar()) {
-				_log.append(Messages.getString("Builder.wrapping"));
+				log.info(Messages.getString("Builder.wrapping"));
 				int len;
 				byte[] buffer = new byte[1024];
 				is = new FileInputStream(Util.getAbsoluteFile(
@@ -127,23 +126,23 @@ public class Builder {
 					os.write(buffer, 0, len);
 				}
 			}
-			_log.append(Messages.getString("Builder.success") + outfile.getPath());
+			log.info(Messages.getString("Builder.success") + outfile.getPath());
 			return outfile;
 		} catch (IOException e) {
 			Util.delete(outfile);
-			_log.append(e.getMessage());
+			log.error(e.getMessage());
 			throw new BuilderException(e);
 		} catch (ExecException e) {
 			Util.delete(outfile);
 			String msg = e.getMessage(); 
 			if (msg != null && msg.indexOf("windres") != -1) {
 				if (e.getErrLine() != -1) {
-					_log.append(Messages.getString("Builder.line.has.errors",
+					log.error(Messages.getString("Builder.line.has.errors",
 							String.valueOf(e.getErrLine())));
-					_log.append(rcb.getLine(e.getErrLine()));
+					log.error(rcb.getLine(e.getErrLine()));
 				} else {
-					_log.append(Messages.getString("Builder.generated.resource.file"));
-					_log.append(rcb.getContent());
+					log.info(Messages.getString("Builder.generated.resource.file"));
+					log.info(rcb.getContent());
 				}
 			}
 			throw new BuilderException(e);
@@ -210,8 +209,8 @@ class Cmd {
 		return this;
 	}
 
-	public void exec(Log log) throws ExecException {
+	public void exec(Log logDeprecated) throws ExecException {
 		String[] cmd = (String[]) _cmd.toArray(new String[_cmd.size()]);
-		Util.exec(cmd, log);
+		Util.exec(cmd, null);
 	}
 }
