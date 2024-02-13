@@ -49,10 +49,12 @@ import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author Copyright (C) 2005 Grzegorz Kowal
  */
+@Slf4j
 public class Util {
 	public static final boolean WINDOWS_OS = System.getProperty("os.name")
 			.toLowerCase().startsWith("windows");
@@ -117,7 +119,7 @@ public class Util {
 		}
 	}
 
-	public static void exec(String[] cmd, Log log) throws ExecException {
+	public static void exec(String[] cmd, Log logDeprecated) throws ExecException {
 		BufferedReader is = null;
 		try {
 			if (WINDOWS_OS) {
@@ -131,7 +133,7 @@ public class Util {
 			int errLine = -1;
 			Pattern pattern = Pattern.compile(":\\d+:");
 			while ((line = is.readLine()) != null) {
-				log.append(line);
+				log.info(line);
 				Matcher matcher = pattern.matcher(line);
 				if (matcher.find()) {
 					errLine = Integer.valueOf(
@@ -179,7 +181,8 @@ public class Util {
 			try {
 				o.close();
 			} catch (IOException e) {
-				System.err.println(e); // XXX log
+				//System.err.println(e); // XXX log
+				log.error(e.getMessage());
 			}
 		}
 	}
@@ -189,7 +192,8 @@ public class Util {
 			try {
 				o.close();
 			} catch (IOException e) {
-				System.err.println(e); // XXX log
+				//System.err.println(e); // XXX log
+				log.error(e.getMessage());
 			}
 		}
 	}
@@ -199,7 +203,8 @@ public class Util {
 			try {
 				o.close();
 			} catch (IOException e) {
-				System.err.println(e); // XXX log
+				//System.err.println(e); // XXX log
+				log.error(e.getMessage());
 			}
 		}
 	}
@@ -209,7 +214,8 @@ public class Util {
 			try {
 				o.close();
 			} catch (IOException e) {
-				System.err.println(e); // XXX log
+//				System.err.println(e); // XXX log
+				log.error(e.getMessage());
 			}
 		}
 	}

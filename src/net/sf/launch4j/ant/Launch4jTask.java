@@ -40,7 +40,6 @@ import java.io.File;
 
 import net.sf.launch4j.Builder;
 import net.sf.launch4j.BuilderException;
-import net.sf.launch4j.Log;
 import net.sf.launch4j.config.Config;
 import net.sf.launch4j.config.ConfigPersister;
 import net.sf.launch4j.config.ConfigPersisterException;
@@ -107,7 +106,7 @@ public class Launch4jTask extends Task {
 				throw new BuildException(
 						Messages.getString("Launch4jTask.specify.config"));
 			}
-			final Builder b = new Builder(Log.getAntLog());
+			final Builder b = new Builder(null);
 			b.build();
 		} catch (ConfigPersisterException e) {
 			throw new BuildException(e);
